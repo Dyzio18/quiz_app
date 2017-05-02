@@ -1,3 +1,5 @@
+'use strict';
+
 (function(){
 
     const data = {
@@ -11,7 +13,133 @@
         timeInSec:0
     };
 
-    let quizData = readFile(data.urlJSON);
+  /** Show current view
+  */
+  const handleView = () => {
+    if (data.countQuery < data.numberOfQuery - 1) {
+      data.countQuery++;
+      showQuery(queryDiv, quiz.questions[data.countQuery].question);
+      showAnswer(answerParentDiv, quiz.questions[data.countQuery].answers, data.checked);
+      updateProgress(progressDiv, data.countQuery + 1, data.numberOfQuery);
+    } else {
+      const questionBox = document.getElementById('id__questionBox');
+
+      if (!data.checked) {
+        document.getElementById('id__timer').remove();
+      }
+
+      data.clicked = false;
+      data.checked = true;
+      data.countQuery = -1; // Restart counter
+      btnNext.innerHTML = 'Sprawdź odpowiedzi';
+
+      showStats(answerParentDiv, questionBox, data.userScore, data.numberOfQuery);
+    }
+  };
+
+  /** Timer Function (countdown/critical time/stop game)
+  *  @param: {number} - time (eg. read from JSON file)
+  *                  !default - number of questions multipled by 30 sec.
+  */
+  const timer = (time = data.numberOfQuery * 30) => {
+    const timer = document.getElementById("id__timer");
+    let currTime = time;
+    const criticalTime = 30 // Signal the end of time (default 30 sec.)
+    const interval = setInterval(() => {
+      currTime--;
+      timer.innerHTML = currTime;
+
+      if (currTime <= criticalTime) {
+        timer.className = 'sg-text-bit  sg-text-bit--not-responsive sg-text-bit--small  quiz__text--warning';
+      }
+
+      if (currTime === 0) {
+        clearInterval(interval);
+        data.countQuery = data.numberOfQuery;
+        handleView();
+      }
+    }, 1000);
+  };
+
+  /**
+  *   @param: {object} - element - DOM element
+  *   @param: {string array}- list
+  *   @param: {boleans} - check
+  */
+  const showAnswer = (element, list, check) => {
+    let msg = "";
+    list.forEach((element, i) => {
+      if (check && list[i].correct) {
+        msg = `${msg}<p class="quiz__answer quiz__answer--correct" data-answer="${list[i].id}">${list[i].answer} </p>`
+      } else {
+        msg = `${msg}<p class="quiz__answer" data-answer="${list[i].id}" >${list[i].answer}</p>`;
+      }
+    });
+
+    element.innerHTML = msg;
+  };
+
+  /**
+  *   @param: {number} - id_answer
+  *   @param: {string array} - list
+  */
+  const checkAnswer = (id_answer, list) => list[id_answer].correct;
+
+  /**  Create question in view
+  *   @param: {object} - element - DOM element
+  *   @param: {string} - str
+  */
+  const showQuery = (element, str) => {
+    element.innerHTML = str;
+  };
+
+  /** Show statistic in final screen
+  *   @param: {object} - element1 - DOM element (output)
+  *   @param: {object} - element2 - DOM element
+  *   @param: {number} - score
+  *   @param: {number} - maxNum
+  */
+  const showStats = (element1, element2, score, maxNum) => {
+    element1.innerHTML = `<h1 class="sg-text-bit sg-text-bit--not-responsive sg-text-bit--warning quiz__text--center"> Twój wynik: ${score}/${maxNum}</h1>`;
+    element2.style.display = 'none';
+  }
+
+  /** Read file from URL and return data
+  *   @param:  {url} - urlJSON
+  *   @return: {object} or {false}(error)
+  */
+  const readFile = (urlJSON) => {
+    const xhr = new XMLHttpRequest();
+    let data;
+
+    xhr.overrideMimeType('application/json');
+    xhr.open('GET', urlJSON, false);
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4 && xhr.status == '200') {
+        data = xhr.responseText;
+      } else {
+        console.log(`Error ${xhr.statusText}`);
+        data = false;
+      }
+    };
+
+    xhr.send();
+
+    return data;
+  };
+
+  /** Function show progress in game (left-bottom div in footer)
+  *   @param:  {object} - element - DOM element
+  *   @param:  {number} - counter
+  *   @param:  {number} - maxNum
+  */
+  const updateProgress = (element, counter, maxNum) => {
+    let msg = `${counter}/${maxNum}`;
+    element.innerHTML = msg;
+  };
+
+
+    const quizData = readFile(data.urlJSON);
     if(!quizData)
     {
         console.log("Error cannot read JSON file");
@@ -50,121 +178,4 @@
             handleView();
         }
     }) 
-
-/** Show current view
-*/
-const handleView  = () => {
-    if( data.countQuery < data.numberOfQuery -1 ){        
-        data.countQuery++;  
-        showQuery(queryDiv, quiz.questions[data.countQuery].question);
-        showAnswer(answerParentDiv, quiz.questions[data.countQuery].answers, data.checked); 
-        updateProgress(progressDiv,data.countQuery+1,data.numberOfQuery);
-    } else {
-        if(!data.checked){ let timer = document.getElementById("id__timer").remove(); }
-        data.clicked = false;
-        data.checked = true;
-        data.countQuery = -1; // Restart counter
-        btnNext.innerHTML = "Sprawdź odpowiedzi";
-        let questionBox = document.getElementById("id__questionBox");
-        showStats (answerParentDiv,questionBox, data.userScore, data.numberOfQuery);
-    }
-}
-
-/** Timer Function (countdown/critical time/stop game)
-*  @param: {number} - time (eg. read from JSON file)
-*                  !default - number of questions multipled by 30 sec.
-*/
-const timer = (time = data.numberOfQuery*30 ) => { 
-    let timer = document.getElementById("id__timer");
-    let currTime = time;
-    let criticalTime = 30 // Signal the end of time (default 30 sec.)
-    let interval = setInterval(function() {
-        currTime--;
-        timer.innerHTML = currTime;
-        if ( currTime <= criticalTime ){
-            timer.className = "sg-text-bit  sg-text-bit--not-responsive sg-text-bit--small  quiz__text--warning";
-        }
-        if (currTime === 0 ){
-            clearInterval(interval);
-            data.countQuery = data.numberOfQuery;
-            handleView();
-            return;    
-        }
-    }, 1000);
-}
-
-/**
-*   @param: {object} - element - DOM element
-*   @param: {string array}- list
-*   @param: {boleans} - check
-*/
-const showAnswer = (element, list, check) => {
-    let msg = "";
-    list.forEach( function(element,i){
-        if(check && list[i].correct) {
-            msg += `<p class="quiz__answer quiz__answer--correct" data-answer="${list[i].id}">${list[i].answer} </p>`
-        } else{
-        msg += `<p class="quiz__answer" data-answer="${list[i].id}" >${list[i].answer}</p>`;
-        }
-    })
-    element.innerHTML = msg;
-}
-
-/**
-*   @param: {number} - id_answer 
-*   @param: {string array} - list
-*/
-function checkAnswer(id_answer, list)  {
-    return list[id_answer].correct
-}
-
-/**  Create question in view
-*   @param: {object} - element - DOM element
-*   @param: {string} - str
-*/
-function showQuery(element,  str) {
-    element.innerHTML = str;    
-}
-
-/** Show statistic in final screen
-*   @param: {object} - element1 - DOM element (output)
-*   @param: {object} - element2 - DOM element
-*   @param: {number} - score 
-*   @param: {number} - maxNum
-*/
-function showStats(element1, element2, score, maxNum) {
-    element1.innerHTML = `<h1 class="sg-text-bit sg-text-bit--not-responsive sg-text-bit--warning quiz__text--center"> Twój wynik: ${score}/${maxNum}</h1>`;
-    element2.style.display = 'none';
-}
-
-/** Read file from URL and return data
-*   @param:  {url} - urlJSON
-*   @return: {object} or {false}(error)
-*/
-function readFile(urlJSON) {
-    let xhr = new XMLHttpRequest();
-    let data;
-    xhr.overrideMimeType("application/json");
-    xhr.open('GET', urlJSON, false); 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status == "200") {
-               data = xhr.responseText;
-        } else{
-            console.log("Error"+xhr.statusText);
-            data = false;
-        }
-    }
-    xhr.send()
-    return data;
-}
- 
-/** Function show progress in game (left-bottom div in footer)
-*   @param:  {object} - element - DOM element
-*   @param:  {number} - counter
-*   @param:  {number} - maxNum 
-*/
-function updateProgress (element, counter, maxNum) {
-    let msg = `${counter}/${maxNum}`;
-    element.innerHTML = msg;
-}
 })();
