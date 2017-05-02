@@ -27,8 +27,6 @@
     const progressDiv = document.getElementById("id__progress");
     const btnNext = document.getElementById("id__buttonNext");   
 
-
-
     // Welcome screen 
     showQuery (queryDiv, data.welcomeMsg);
     document.getElementById("id__timer").innerHTML = data.timeInSec;
@@ -39,11 +37,8 @@
         if(!data.clicked) {
             data.clicked = true;
             btnNext.innerHTML = "Dalej";          
-            if(!data.checked){
-                timer(data.timeInSec);
-            } else{
-                document.getElementById("id__questionBox").style.display = 'block';               
-            }
+            if( !data.checked){ timer(data.timeInSec); } 
+            else{ document.getElementById("id__questionBox").style.display = 'block'; }
         }  
         handleView();
     })
@@ -59,18 +54,13 @@
 /** Show current view
 */
 const handleView  = () => {
-    // If questions to ask
     if( data.countQuery < data.numberOfQuery -1 ){        
         data.countQuery++;  
         showQuery(queryDiv, quiz.questions[data.countQuery].question);
         showAnswer(answerParentDiv, quiz.questions[data.countQuery].answers, data.checked); 
         updateProgress(progressDiv,data.countQuery+1,data.numberOfQuery);
-    }
-    // End of questions
-    else {
-        if(!data.checked){
-            let timer = document.getElementById("id__timer").remove();
-        }
+    } else {
+        if(!data.checked){ let timer = document.getElementById("id__timer").remove(); }
         data.clicked = false;
         data.checked = true;
         data.countQuery = -1; // Restart counter
@@ -84,7 +74,7 @@ const handleView  = () => {
 *  @param: {number} - time (eg. read from JSON file)
 *                  !default - number of questions multipled by 30 sec.
 */
-const timer = (time = data.numberOfQuery*30 ) =>{ 
+const timer = (time = data.numberOfQuery*30 ) => { 
     let timer = document.getElementById("id__timer");
     let currTime = time;
     let criticalTime = 30 // Signal the end of time (default 30 sec.)
@@ -110,11 +100,11 @@ const timer = (time = data.numberOfQuery*30 ) =>{
 */
 const showAnswer = (element, list, check) => {
     let msg = "";
-    list.forEach( function(e,i){
+    list.forEach( function(element,i){
         if(check && list[i].correct) {
-            msg += `<p class="quiz__answer quiz__answer--correct" data-answer="${list[i].id}" >${list[i].answer}</p>`;
+            msg += `<p class="quiz__answer quiz__answer--correct" data-answer="${list[i].id}">${list[i].answer} </p>`
         } else{
-            msg += `<p class="quiz__answer" data-answer="${list[i].id}" >${list[i].answer}</p>`;
+        msg += `<p class="quiz__answer" data-answer="${list[i].id}" >${list[i].answer}</p>`;
         }
     })
     element.innerHTML = msg;
@@ -148,7 +138,7 @@ function showStats(element1, element2, score, maxNum) {
 }
 
 /** Read file from URL and return data
-*   @param:  {url adrress} - file
+*   @param:  {url} - urlJSON
 *   @return: {object} or {false}(error)
 */
 function readFile(urlJSON) {
@@ -177,5 +167,4 @@ function updateProgress (element, counter, maxNum) {
     let msg = `${counter}/${maxNum}`;
     element.innerHTML = msg;
 }
-
 })();
