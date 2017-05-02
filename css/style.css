@@ -30,7 +30,7 @@ section {
     animation: color-change 1s infinite; }
   .quiz .quiz__question {
     margin: 5px 15px; }
-    .quiz .quiz__question .quiz__questionText {
+    .quiz .quiz__question .question__text {
       font-size: 1.1rem; }
   .quiz .quiz__answers {
     padding: 15px; }
@@ -44,12 +44,9 @@ section {
       cursor: pointer; }
     .quiz .quiz__answers p:hover, .quiz .quiz__answers p:active {
       background-color: #abe1ff; }
-    .quiz .quiz__answers label, .quiz .quiz__answers input {
-      font-size: 1rem;
-      line-height: 1rem; }
     .quiz .quiz__answers .quiz__answer--correct {
       background-color: #7ed7ac; }
-  .quiz button {
+  .quiz .quiz__btn {
     display: block;
     margin: 0 auto; }
   .quiz .footer {
